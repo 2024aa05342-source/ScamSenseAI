@@ -1,0 +1,9 @@
+Remote access application scams are increasing.
+
+AnyDesk and TeamViewer installation requests are common fraud indicators.
+
+Fraudsters frequently impersonate customer support agents.
+
+OTP sharing requests are high-risk phishing indicators.
+
+KYC verification scams often use shortened URLs.

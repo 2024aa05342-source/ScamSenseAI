@@ -1,0 +1,11 @@
+Banks never ask customers to share OTPs.
+
+Banks never request PIN numbers.
+
+Banks never request CVV numbers.
+
+Customers should verify suspicious communication using official banking channels.
+
+Urgent account suspension messages should be treated with caution.
+
+KYC updates should only be performed through official bank websites.
