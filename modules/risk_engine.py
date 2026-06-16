@@ -1,4 +1,4 @@
-from ollama import chat
+from modules.llm_engine import generate_response
 import json
 import time
 from modules.rag_engine import get_knowledge
@@ -85,27 +85,21 @@ Schema:
 
     start = time.time()
 
-    response = chat(
-        model="qwen3:4b",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-    )
-
+    content = generate_response(prompt)
+    
     end = time.time()
-
+    
     print(f"LLM Time: {round(end-start,2)} seconds")
-
-    content = response["message"]["content"]
-
+    
     print("RAW RESPONSE:")
     print(content)
 
     try:
 
+        content = content.replace("```json", "")
+        content = content.replace("```", "")
+        content = content.strip()
+        
         parsed = json.loads(content)
 
         print("PARSED RESULT:")
