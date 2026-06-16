@@ -1,4 +1,4 @@
-from modules.llm_engine import generate_response
+from ollama import chat
 import json
 import time
 from modules.rag_engine import get_knowledge
@@ -85,65 +85,29 @@ Schema:
 
     start = time.time()
 
-    content = generate_response(prompt)
-    
+    response = chat(
+        model="qwen3:4b",
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+    )
+
     end = time.time()
-    
+
     print(f"LLM Time: {round(end-start,2)} seconds")
-    
+
+    content = response["message"]["content"]
+
     print("RAW RESPONSE:")
     print(content)
 
     try:
 
-        content = content.replace("```json", "")
-        content = content.replace("```", "")
-        content = content.strip()
-        
         parsed = json.loads(content)
-        message = text.lower()
-        
-        score = parsed.get("risk_score", 0)
-        
-        if "otp" in message:
-            score = max(score, 90)
-        
-        if "kyc" in message:
-            score = max(score, 80)
-        
-        if (
-             "account suspended" in message
-              or "account will be suspended" in message
-              or "suspended today" in message
-          ):
-            score = max(score, 85)
-        
-        if (
-            "account blocked" in message
-            or "account will be blocked" in message
-            or "blocked immediately" in message
-        ):
-            score = max(score, 85)
-        
-        if "verify your account" in message:
-            score = max(score, 80)
-        
-        if "bank" in message and "otp" in message:
-            score = max(score, 95)
-        if "anydesk" in message or "teamviewer" in message:
-            score = max(score, 90)
-        
-        parsed["risk_score"] = score
-        if score >= 81:
-            parsed["risk_level"] = "CONFIRMED SCAM"
-        elif score >= 51:
-            parsed["risk_level"] = "LIKELY SCAM"
-        elif score >= 21:
-            parsed["risk_level"] = "SUSPICIOUS"
-        else:
-            parsed["risk_level"] = "SAFE"
-        
-        
+
         print("PARSED RESULT:")
         print(parsed)
 
