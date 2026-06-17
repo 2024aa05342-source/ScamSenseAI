@@ -8,8 +8,7 @@ from modules.speech_engine import transcribe_audio
 def display_report(result):
 
     st.header("🔎 ScamSenseAI Investigation Report")
-    st.subheader("🤖 Investigation Agents")
-    with st.expander("🤖 Agent Workflow"):
+    with st.expander("For Judges: Multi-Agent Investigation Workflow"):
 
         findings = result.get(
             "agent_findings",
@@ -21,34 +20,23 @@ def display_report(result):
             st.success(agent)
 
             st.write(output)
-        
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.info(f"Case ID: {result['case_id']}")
-
-    with col2:
-        st.info(f"Risk Level: {result['risk_level']}")
-
-    st.caption(
-        f"Analysis Time: {result['timestamp']}"
-    )
-    st.metric(
-        "Scam Risk",
-        f"{result['risk_score']}/100"
-    )
-
-    if result["risk_score"] > 80:
-        st.error("🚨 CONFIRMED SCAM")
-
-    elif result["risk_score"] > 50:
-        st.warning("⚠️ LIKELY SCAM")
-
+ 
+    if result["risk_level"] == "CONFIRMED SCAM":
+        st.error(
+            "🚨 HIGH RISK SCAM\n\nDo NOT share OTPs, passwords, money or personal information."
+        )
+    
+    elif result["risk_level"] == "LIKELY SCAM":
+        st.warning(
+            "⚠️ SUSPICIOUS MESSAGE\n\nPlease verify with a trusted family member or official source."
+        )
+    
     else:
-        st.success("✅ LOW RISK")
+        st.success(
+            "✅ APPEARS SAFE\n\nNo major scam indicators were detected."
+        )
 
-    st.subheader("Scam Type")
+    st.subheader("📌 What Did We Detect?")
     if result["risk_score"] > 80:
         st.error(
             "This message is very likely trying to steal money or personal information."
@@ -63,23 +51,23 @@ def display_report(result):
             "No major scam indicators were detected."
         )
     st.info(result["scam_type"])
-    st.subheader("Evidence Collected")
+    st.subheader("🔍 Why Is This Suspicious?")
 
     for item in result["evidence"]:
         st.write(f"📚 {item}")
 
-    st.subheader("Red Flags")
+    st.subheader("⚠️ Warning Signs")
 
     for item in result["red_flags"]:
         st.write(f"⚠️ {item}")
 
-    st.subheader("Recommended Action")
+    st.subheader("✅ What Should I Do?")
 
     st.success(
         result["recommendation"]
     )
 
-    st.subheader("👨‍👩‍👧 Family Report")
+    st.subheader("👨‍👩‍👧 Share With Family")
     
     family_report = f"""ScamSenseAI Alert
     
@@ -106,12 +94,13 @@ st.set_page_config(
 )
 
 st.title("🛡️ ScamSenseAI")
+
 st.subheader(
-    "Protect Yourself From Fraud"
+    "Helping You Stay Safe From Scams"
 )
 
-st.info(
-    "Designed to help senior citizens identify scam messages, screenshots and voice calls."
+st.success(
+    "Check suspicious messages, screenshots and voice recordings before taking action."
 )
 
 tab1, tab2, tab3 = st.tabs(
@@ -140,8 +129,8 @@ with tab1:
             result = analyze_scam(user_text)
             end = time.time()
 
-            st.metric("Inference Time",f"{round(end-start,2)} sec")
-            st.caption("Model: Qwen2.5-3B running on AMD GPU")
+            #st.metric("Inference Time",f"{round(end-start,2)} sec")
+            #st.caption("Model: Qwen2.5-3B running on AMD GPU")
             display_report(result)
 
 with tab2:

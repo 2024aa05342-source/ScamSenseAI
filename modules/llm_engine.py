@@ -1,5 +1,6 @@
 from transformers import pipeline
 import torch
+import time
 
 print("Loading LLM...")
 
@@ -14,16 +15,22 @@ print("LLM Loaded")
 
 def generate_response(prompt):
 
+    print("PROMPT CHARS:", len(prompt))
+
+    start = time.time()
+
     response = generator(
         prompt,
-        max_new_tokens=400,
-        do_sample=False
+        max_new_tokens=250,
+        do_sample=False,
+        return_full_text=False
     )
 
-    generated = response[0]["generated_text"]
+    end = time.time()
 
-    if generated.startswith(prompt):
-        generated = generated[len(prompt):]
+    print("GENERATION TIME:", round(end - start, 2))
+
+    generated = response[0]["generated_text"]
 
     generated = generated.replace("```json", "")
     generated = generated.replace("```", "")

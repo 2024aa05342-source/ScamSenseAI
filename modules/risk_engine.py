@@ -15,27 +15,29 @@ from modules.agents import (
 def analyze_scam(text):
 
     rule_score, rule_reasons = calculate_rule_score(text)
+    print("RULE SCORE VALUE:", rule_score)
     print("RULE SCORE:", rule_score)
     print("RULE REASONS:", rule_reasons)
-    if rule_score == 0 :
-
-        print("SAFE SHORTCUT ACTIVATED")
+    
+    if rule_score >= 85:
 
         report = generate_report(
             input_type="Text",
             analysis_result={
-                "risk_score": 0,
-                "risk_level": "SAFE",
-                "scam_type": "Normal Message",
-                "red_flags": [],
-                "evidence": [],
-                "recommendation": "No scam indicators detected."
+                "risk_score": rule_score,
+                "risk_level": "CONFIRMED SCAM",
+                "scam_type": "High Confidence Scam",
+                "red_flags": rule_reasons,
+                "evidence": rule_reasons,
+                "recommendation": "Do not engage. Block and report immediately."
             }
         )
-
+    
         return report
-        
+
     retrieved_items = retrieve_context(text)
+
+    print("RETRIEVED ITEMS:", len(retrieved_items))
 
     knowledge = ""
 
@@ -46,7 +48,7 @@ def analyze_scam(text):
             f"Content: {item['text']}\n\n"
         )
 
-
+    print("KNOWLEDGE LENGTH:", len(knowledge))
     prompt = f"""
 You are an expert cyber fraud analyst.
 
@@ -106,6 +108,28 @@ There must be at least one scam indicator:
 - Payment request
 - Suspicious link
 
+IMPORTANT SAFE EXAMPLES:
+
+The following messages should usually score between 0 and 20:
+
+- Hello, I am your neighbour. I think your front door is open.
+- Your Amazon package will arrive tomorrow.
+- Your doctor's appointment is scheduled for Monday.
+- Happy Birthday. Have a wonderful day.
+- Please call me when you are free.
+
+Do NOT assign a score above 20 unless there is a scam indicator such as:
+
+- OTP request
+- Password request
+- KYC demand
+- Payment request
+- Lottery winnings
+- Prize claims
+- Urgency tactics
+- Account suspension threats
+- Suspicious links
+- Remote access software
 
 Message To Analyze:
 
@@ -123,6 +147,7 @@ Schema:
     "recommendation": ""
 }}
 """
+    print("PROMPT LENGTH:", len(prompt))
 
     start = time.time()
 
