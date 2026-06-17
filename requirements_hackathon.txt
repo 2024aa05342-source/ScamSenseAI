@@ -1,0 +1,13 @@
+streamlit
+transformers
+torch
+sentence-transformers
+chromadb
+easyocr
+faster-whisper
+pillow
+numpy
+pandas
+scikit-learn
+huggingface-hub
+accelerate

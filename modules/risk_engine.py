@@ -1,4 +1,5 @@
 from modules.llm_engine import generate_response
+from modules.rule_engine import calculate_rule_score
 import json
 import time
 from modules.rag_engine import get_knowledge
@@ -12,7 +13,28 @@ from modules.agents import (
 )
 
 def analyze_scam(text):
-    
+
+    rule_score, rule_reasons = calculate_rule_score(text)
+    print("RULE SCORE:", rule_score)
+    print("RULE REASONS:", rule_reasons)
+    if rule_score == 0 :
+
+        print("SAFE SHORTCUT ACTIVATED")
+
+        report = generate_report(
+            input_type="Text",
+            analysis_result={
+                "risk_score": 0,
+                "risk_level": "SAFE",
+                "scam_type": "Normal Message",
+                "red_flags": [],
+                "evidence": [],
+                "recommendation": "No scam indicators detected."
+            }
+        )
+
+        return report
+        
     retrieved_items = retrieve_context(text)
 
     knowledge = ""
@@ -64,6 +86,25 @@ Scoring Guidance:
 - Fake prizes, lottery winnings, investment scams, and job scams should usually score above 80.
 - Legitimate service notifications with no request for action should score below 30.
 
+IMPORTANT:
+
+A message should NOT be classified as a scam
+simply because it mentions:
+
+- bank
+- government office
+- courier
+- family member
+- police officer
+
+There must be at least one scam indicator:
+- OTP request
+- KYC demand
+- Password request
+- Account suspension threat
+- Remote access software
+- Payment request
+- Suspicious link
 
 
 Message To Analyze:
@@ -100,7 +141,31 @@ Schema:
         content = content.replace("```", "")
         content = content.strip()
         
-        parsed = json.loads(content)
+        decoder = json.JSONDecoder()
+        
+        parsed, idx = decoder.raw_decode(content)
+        
+        print("PARSED JSON SUCCESSFULLY")
+        print("JSON ENDS AT:", idx)
+        print("REMAINING CONTENT:")
+        print(content[idx:])
+        
+     
+       
+        llm_score = parsed.get("risk_score", 0)
+        print("LLM SCORE:", llm_score)
+        
+        final_score = max(llm_score, rule_score)
+        print("FINAL SCORE:", final_score)
+        
+        parsed["risk_score"] = final_score
+        if rule_reasons:
+
+            if "red_flags" not in parsed:
+                parsed["red_flags"] = []
+        
+            parsed["red_flags"].extend(rule_reasons)
+        
         message = text.lower()
         
         score = parsed.get("risk_score", 0)
